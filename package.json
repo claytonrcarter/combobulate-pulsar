@@ -6,10 +6,13 @@
   "keywords": [],
   "activationCommands": {
     "atom-workspace": [
+      "combobulate:move-to-current-function",
+      "combobulate:move-to-current-function-end",
       "combobulate:move-to-larger-syntax-node",
       "combobulate:move-to-smaller-syntax-node",
       "combobulate:move-to-next-sibling",
       "combobulate:move-to-previous-sibling",
+      "combobulate:select-current-function",
       "combobulate:swap-with-next-sibling",
       "combobulate:swap-with-previous-sibling",
       "combobulate:transpose-nodes"
@@ -21,6 +24,7 @@
     "atom": ">=1.0.0 <2.0.0"
   },
   "devDependencies": {
+    "dedent": "^1.5.1",
     "prettier": "^3.2.4"
   }
 }

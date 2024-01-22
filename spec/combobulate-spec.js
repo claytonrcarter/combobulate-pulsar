@@ -1,5 +1,6 @@
 'use babel';
 
+import dedent from 'dedent';
 import Combobulate from '../lib/combobulate';
 
 async function setText(editor, text) {
@@ -160,6 +161,28 @@ describe('CombobulatePulsar', () => {
 
         expect(editor.getCursorBufferPosition().column).toBe(6);
         expect(getNodeAtCursor(editor).text).toBe('bar');
+      });
+    });
+
+    describe('function declarations', () => {
+      it('moves to enclosing function', async () => {
+        await setText(
+          editor,
+          dedent`
+                function foo() {
+                    const a = 1;
+                }
+            `,
+        );
+        editor.setCursorBufferPosition([1, 4]);
+
+        expect(getNodeAtCursor(editor).text).toBe('const');
+
+        Combobulate.moveToCurrentFunction();
+
+        expect(editor.getCursorBufferPosition().row).toBe(0);
+        expect(editor.getCursorBufferPosition().column).toBe(0);
+        expect(getNodeAtCursor(editor).text).toBe('function');
       });
     });
   });
