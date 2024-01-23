@@ -6,6 +6,8 @@
   "keywords": [],
   "activationCommands": {
     "atom-workspace": [
+      "combobulate:move-to-larger-syntax-node",
+      "combobulate:move-to-smaller-syntax-node",
       "combobulate:move-to-next-sibling",
       "combobulate:move-to-previous-sibling",
       "combobulate:swap-with-next-sibling",

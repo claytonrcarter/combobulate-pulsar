@@ -14,19 +14,6 @@ function getNodeAtCursor(editor) {
     .getSyntaxNodeAtPosition(editor.getCursorBufferPosition());
 }
 
-function describeNode(node) {
-  if (!node) {
-    return 'Bad node!';
-  }
-
-  return {
-    text: node.text,
-    type: node.type,
-    range: node.range,
-    isNamed: node.isNamed(),
-  };
-}
-
 describe('CombobulatePulsar', () => {
   let workspaceElement, editor;
 
@@ -117,6 +104,62 @@ describe('CombobulatePulsar', () => {
 
         expect(editor.getCursorBufferPosition().column).toBe(17);
         expect(getNodeAtCursor(editor).text).toBe('3');
+      });
+    });
+
+    describe('larger and smaller nodes', () => {
+      it('moves to larger nodes', async () => {
+        await setText(editor, 'foo(["bar"]);');
+        editor.setCursorBufferPosition([0, 7]);
+
+        expect(getNodeAtCursor(editor).text).toBe('bar');
+
+        Combobulate.moveToLargerSyntaxNode();
+
+        expect(editor.getCursorBufferPosition().column).toBe(5);
+        expect(getNodeAtCursor(editor).text).toBe('"');
+
+        Combobulate.moveToLargerSyntaxNode();
+
+        expect(editor.getCursorBufferPosition().column).toBe(4);
+        expect(getNodeAtCursor(editor).text).toBe('[');
+
+        Combobulate.moveToLargerSyntaxNode();
+
+        expect(editor.getCursorBufferPosition().column).toBe(3);
+        expect(getNodeAtCursor(editor).text).toBe('(');
+
+        Combobulate.moveToLargerSyntaxNode();
+
+        expect(editor.getCursorBufferPosition().column).toBe(0);
+        expect(getNodeAtCursor(editor).text).toBe('foo');
+      });
+
+      it('moves to smaller nodes', async () => {
+        await setText(editor, 'foo(["bar"]);');
+        editor.setCursorBufferPosition([0, 0]);
+
+        expect(getNodeAtCursor(editor).text).toBe('foo');
+
+        Combobulate.moveToSmallerSyntaxNode();
+
+        expect(editor.getCursorBufferPosition().column).toBe(3);
+        expect(getNodeAtCursor(editor).text).toBe('(');
+
+        Combobulate.moveToSmallerSyntaxNode();
+
+        expect(editor.getCursorBufferPosition().column).toBe(4);
+        expect(getNodeAtCursor(editor).text).toBe('[');
+
+        Combobulate.moveToSmallerSyntaxNode();
+
+        expect(editor.getCursorBufferPosition().column).toBe(5);
+        expect(getNodeAtCursor(editor).text).toBe('"');
+
+        Combobulate.moveToSmallerSyntaxNode();
+
+        expect(editor.getCursorBufferPosition().column).toBe(6);
+        expect(getNodeAtCursor(editor).text).toBe('bar');
       });
     });
   });
