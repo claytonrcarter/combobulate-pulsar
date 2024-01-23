@@ -563,6 +563,48 @@ describe('CombobulatePulsar', () => {
         expect(cursors[1].getBufferRow()).toBe(0);
         expect(cursors[2].getBufferRow()).toBe(0);
       });
+
+      it('traverses injected siblings', async () => {
+        // By default, getSyntaxNodeAtPosition() will return a node in an
+        // injected grammar if one exists. Make sure that we handle that.
+        await setText(
+          editor,
+          dedent`
+            function foo() {}
+            /** @return void */
+            function bar() {}
+        `,
+        );
+        editor.setCursorBufferPosition([0, 0]);
+        expect(getNodeAtCursor(editor).text).toBe('function');
+
+        Combobulate.addCursorToNextSibling();
+
+        // NB This ensures that the injections are loaded and ready, because
+        // that's the whole point of this test.  If this assertion fails with
+        // `type === comment`, then the injections haven't loaded and the test
+        // would otherwise pass as a false positive. This seems to be the case
+        // when this test is run by itself, but doesn't seem to be an issue when
+        // run with other tests.
+        //
+        // Now, having said that, and have just put this in place, I can no
+        // longer reproduce the issue when running this test in isolation.
+        // Perhaps the other code changes in Combobulate nudged things enough to
+        // "fix" it. ¯\_(ツ)_/¯
+        expect(getNodeAtCursor(editor).type).toBe('document');
+
+        Combobulate.addCursorToNextSibling();
+
+        cursors = editor.getCursors();
+        expect(cursors.length).toBe(3);
+        expect(cursors[0].getBufferRow()).toBe(0);
+        expect(cursors[1].getBufferRow()).toBe(1);
+        expect(cursors[2].getBufferRow()).toBe(2);
+
+        expect(cursors[0].getBufferColumn()).toBe(0);
+        expect(cursors[1].getBufferColumn()).toBe(0);
+        expect(cursors[2].getBufferColumn()).toBe(0);
+      });
     });
   });
 
