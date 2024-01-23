@@ -7,7 +7,10 @@
   "activationCommands": {
     "atom-workspace": [
       "combobulate:move-to-next-sibling",
-      "combobulate:move-to-previous-sibling"
+      "combobulate:move-to-previous-sibling",
+      "combobulate:swap-with-next-sibling",
+      "combobulate:swap-with-previous-sibling",
+      "combobulate:transpose-nodes"
     ]
   },
   "repository": "https://github.com/claytonrcarter/combobulate-pulsar",
