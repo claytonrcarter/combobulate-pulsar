@@ -1,0 +1,21 @@
+{
+  "name": "combobulate",
+  "main": "./lib/combobulate",
+  "version": "0.0.0",
+  "description": "Structural navigation and editting in Pulsar, powered by tree-sitter",
+  "keywords": [],
+  "activationCommands": {
+    "atom-workspace": [
+      "combobulate:move-to-next-sibling",
+      "combobulate:move-to-previous-sibling"
+    ]
+  },
+  "repository": "https://github.com/claytonrcarter/combobulate-pulsar",
+  "license": "MIT",
+  "engines": {
+    "atom": ">=1.0.0 <2.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.4"
+  }
+}
