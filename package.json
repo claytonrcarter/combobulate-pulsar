@@ -6,6 +6,9 @@
   "keywords": [],
   "activationCommands": {
     "atom-workspace": [
+      "combobulate:add-cursor-to-all-siblings",
+      "combobulate:add-cursor-to-next-sibling",
+      "combobulate:add-cursor-to-previous-sibling",
       "combobulate:move-to-current-function",
       "combobulate:move-to-current-function-end",
       "combobulate:move-to-larger-syntax-node",

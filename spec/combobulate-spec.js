@@ -187,6 +187,96 @@ describe('CombobulatePulsar', () => {
     });
   });
 
+  describe('multiple cursors', () => {
+    describe('sibling nodes', () => {
+      it('places cursors at next siblings', async () => {
+        await setText(editor, '[1, 2, 3];');
+        editor.setCursorBufferPosition([0, 1]);
+
+        expect(getNodeAtCursor(editor).text).toBe('1');
+
+        // call once to add cursor
+        Combobulate.addCursorToNextSibling();
+
+        let cursors = editor.getCursors();
+        expect(cursors.length).toBe(2);
+        expect(cursors[0].getBufferColumn()).toBe(1);
+        expect(cursors[1].getBufferColumn()).toBe(4);
+
+        // call again to add another cursor
+        Combobulate.addCursorToNextSibling();
+
+        cursors = editor.getCursors();
+        expect(cursors.length).toBe(3);
+        expect(cursors[0].getBufferColumn()).toBe(1);
+        expect(cursors[1].getBufferColumn()).toBe(4);
+        expect(cursors[2].getBufferColumn()).toBe(7);
+
+        // call one more time, no changes
+        Combobulate.addCursorToNextSibling();
+
+        cursors = editor.getCursors();
+        expect(cursors.length).toBe(3);
+        expect(cursors[0].getBufferColumn()).toBe(1);
+        expect(cursors[1].getBufferColumn()).toBe(4);
+        expect(cursors[2].getBufferColumn()).toBe(7);
+      });
+
+      it('places cursors at previous siblings', async () => {
+        await setText(editor, '[1, 2, 3];');
+        editor.setCursorBufferPosition([0, 7]);
+
+        expect(getNodeAtCursor(editor).text).toBe('3');
+
+        // call once to add cursor
+        Combobulate.addCursorToPreviousSibling();
+
+        let cursors = editor.getCursors();
+        expect(cursors.length).toBe(2);
+        expect(cursors[0].getBufferColumn()).toBe(7);
+        expect(cursors[1].getBufferColumn()).toBe(4);
+
+        // call again to add another cursor
+        Combobulate.addCursorToPreviousSibling();
+
+        cursors = editor.getCursors();
+        expect(cursors.length).toBe(3);
+        expect(cursors[0].getBufferColumn()).toBe(7);
+        expect(cursors[1].getBufferColumn()).toBe(4);
+        expect(cursors[2].getBufferColumn()).toBe(1);
+
+        // call one more time, no changes
+        Combobulate.addCursorToPreviousSibling();
+
+        cursors = editor.getCursors();
+        expect(cursors.length).toBe(3);
+        expect(cursors[0].getBufferColumn()).toBe(7);
+        expect(cursors[1].getBufferColumn()).toBe(4);
+        expect(cursors[2].getBufferColumn()).toBe(1);
+      });
+
+      it('places cursors at all siblings', async () => {
+        await setText(editor, '[1, 2, 3];');
+        editor.setCursorBufferPosition([0, 1]);
+
+        expect(getNodeAtCursor(editor).text).toBe('1');
+
+        Combobulate.addCursorToAllSiblings();
+
+        const cursors = editor.getCursors();
+        expect(cursors.length).toBe(3);
+        expect(cursors[0].getBufferColumn()).toBe(1);
+        expect(cursors[1].getBufferColumn()).toBe(4);
+        expect(cursors[2].getBufferColumn()).toBe(7);
+
+        // just a sanity check
+        expect(cursors[0].getBufferRow()).toBe(0);
+        expect(cursors[1].getBufferRow()).toBe(0);
+        expect(cursors[2].getBufferRow()).toBe(0);
+      });
+    });
+  });
+
   describe('swapping nodes', () => {
     describe('sibling nodes', () => {
       it('swaps simple nodes', async () => {
