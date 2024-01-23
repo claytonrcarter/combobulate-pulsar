@@ -187,6 +187,295 @@ describe('CombobulatePulsar', () => {
     });
   });
 
+  describe('selecting nodes', () => {
+    describe('current node', () => {
+      it('works at the beginning of a node', async () => {
+        await setText(editor, 'let a = foo.bar();');
+        editor.setCursorBufferPosition([0, 8]);
+
+        Combobulate.selectCurrentNode();
+
+        const range = editor.getLastSelection().getBufferRange();
+        expect(
+          range.isEqual([
+            [0, 8],
+            [0, 17],
+          ]),
+        ).toBe(true);
+      });
+
+      it('works in the middle of a node', async () => {
+        await setText(editor, 'let a = foo.bar();');
+        editor.setCursorBufferPosition([0, 10]);
+
+        Combobulate.selectCurrentNode();
+
+        const range = editor.getLastSelection().getBufferRange();
+        expect(
+          range.isEqual([
+            [0, 8],
+            [0, 17],
+          ]),
+        ).toBe(true);
+      });
+
+      it('works at the end of a node', async () => {
+        await setText(editor, 'let a = foo.bar();');
+        editor.setCursorBufferPosition([0, 17]);
+
+        Combobulate.selectCurrentNode();
+
+        const range = editor.getLastSelection().getBufferRange();
+        // NB not the same same range as previous tests, but that's intended
+        expect(
+          range.isEqual([
+            [0, 4],
+            [0, 17],
+          ]),
+        ).toBe(true);
+      });
+    });
+
+    describe('sibling nodes', () => {
+      describe('next siblings', () => {
+        it('selects from start', async () => {
+          await setText(editor, '[abc, def, ghi]');
+          editor.setCursorBufferPosition([0, 1]);
+
+          Combobulate.selectNextSibling();
+
+          const range = editor.getLastSelection().getBufferRange();
+          expect(editor.getSelectedText()).toBe('def');
+        });
+
+        it('selects from middle', async () => {
+          await setText(editor, '[abc, def, ghi]');
+          editor.setCursorBufferPosition([0, 2]);
+
+          Combobulate.selectNextSibling();
+
+          const range = editor.getLastSelection().getBufferRange();
+          expect(editor.getSelectedText()).toBe('def');
+        });
+
+        it('selects from end', async () => {
+          await setText(editor, '[abc, def, ghi]');
+          editor.setCursorBufferPosition([0, 4]);
+
+          Combobulate.selectNextSibling();
+
+          const range = editor.getLastSelection().getBufferRange();
+          expect(editor.getSelectedText()).toBe('def');
+        });
+
+        it('expands selection', async () => {
+          await setText(editor, '[abc, def, ghi]');
+          editor.setCursorBufferPosition([0, 1]);
+
+          Combobulate.selectNextSibling();
+          Combobulate.selectNextSibling();
+
+          const selections = editor.getSelections();
+          expect(selections.length).toBe(2);
+          expect(selections[0]?.getText()).toBe('def');
+          expect(selections[1]?.getText()).toBe('ghi');
+        });
+      });
+
+      describe('previous siblings', () => {
+        it('selects from start', async () => {
+          await setText(editor, '[abc, def, ghi]');
+          editor.setCursorBufferPosition([0, 6]);
+
+          Combobulate.selectPreviousSibling();
+
+          const range = editor.getLastSelection().getBufferRange();
+          expect(editor.getSelectedText()).toBe('abc');
+        });
+
+        it('selects from middle', async () => {
+          await setText(editor, '[abc, def, ghi]');
+          editor.setCursorBufferPosition([0, 7]);
+
+          Combobulate.selectPreviousSibling();
+
+          const range = editor.getLastSelection().getBufferRange();
+          expect(editor.getSelectedText()).toBe('abc');
+        });
+
+        it('selects from end', async () => {
+          await setText(editor, '[abc, def, ghi]');
+          editor.setCursorBufferPosition([0, 9]);
+
+          Combobulate.selectPreviousSibling();
+
+          const range = editor.getLastSelection().getBufferRange();
+          expect(editor.getSelectedText()).toBe('abc');
+        });
+      });
+    });
+
+    describe('function declarations', () => {
+      it('selects from top level of function', async () => {
+        await setText(
+          editor,
+          dedent`
+                function foo() {
+                    const a = 1;
+                }
+            `,
+        );
+        // just inside `function`
+        editor.setCursorBufferPosition([0, 5]);
+        expect(getNodeAtCursor(editor).text).toBe('function');
+
+        Combobulate.selectCurrentFunction();
+
+        const range = editor.getLastSelection().getBufferRange();
+        expect(
+          range.isEqual([
+            [0, 0],
+            [2, 1],
+          ]),
+        ).toBe(true);
+      });
+
+      it('selects from cursor inside function', async () => {
+        await setText(
+          editor,
+          dedent`
+                function foo() {
+                    const a = 1;
+                }
+            `,
+        );
+        // just inside `const`
+        editor.setCursorBufferPosition([1, 5]);
+        expect(getNodeAtCursor(editor).text).toBe('const');
+
+        Combobulate.selectCurrentFunction();
+
+        const range = editor.getLastSelection().getBufferRange();
+        expect(
+          range.isEqual([
+            [0, 0],
+            [2, 1],
+          ]),
+        ).toBe(true);
+      });
+
+      it('selects from selection inside function', async () => {
+        await setText(
+          editor,
+          dedent`
+                function foo() {
+                    const a = 1;
+                }
+            `,
+        );
+        // any "unbalanced" selection; spans nodes, but not inclusively
+        editor.setSelectedBufferRange([
+          [1, 7],
+          [1, 13],
+        ]);
+        expect(editor.getSelectedText()).toBe('st a =');
+
+        Combobulate.selectCurrentFunction();
+
+        const range = editor.getLastSelection().getBufferRange();
+        expect(
+          range.isEqual([
+            [0, 0],
+            [2, 1],
+          ]),
+        ).toBe(true);
+      });
+    });
+
+    describe('method declarations', () => {
+      it('selects from top level of method', async () => {
+        await setText(
+          editor,
+          dedent`
+                class Foo {
+                    bar() {
+                        const a = 1;
+                    }
+                }
+            `,
+        );
+        // just inside `bar`
+        editor.setCursorBufferPosition([1, 5]);
+        expect(getNodeAtCursor(editor).text).toBe('bar');
+
+        Combobulate.selectCurrentFunction();
+
+        const range = editor.getLastSelection().getBufferRange();
+        expect(
+          range.isEqual([
+            [1, 4],
+            [3, 5],
+          ]),
+        ).toBe(true);
+      });
+
+      it('selects from cursor inside method', async () => {
+        await setText(
+          editor,
+          dedent`
+                class Foo {
+                    bar() {
+                        const a = 1;
+                    }
+                }
+            `,
+        );
+        // just inside `const`
+        editor.setCursorBufferPosition([2, 9]);
+        expect(getNodeAtCursor(editor).text).toBe('const');
+
+        Combobulate.selectCurrentFunction();
+
+        const range = editor.getLastSelection().getBufferRange();
+        expect(
+          range.isEqual([
+            [1, 4],
+            [3, 5],
+          ]),
+        ).toBe(true);
+      });
+
+      it('selects from selection inside method', async () => {
+        await setText(
+          editor,
+          dedent`
+                class Foo {
+                    bar() {
+                        const a = 1;
+                    }
+                }
+            `,
+        );
+        // any "unbalanced" selection; spans nodes, but not inclusively
+        editor.setSelectedBufferRange([
+          [2, 11],
+          [2, 17],
+        ]);
+        expect(editor.getSelectedText()).toBe('st a =');
+
+        Combobulate.selectCurrentFunction();
+
+        const range = editor.getLastSelection().getBufferRange();
+        expect(
+          range.isEqual([
+            [1, 4],
+            [3, 5],
+          ]),
+        ).toBe(true);
+      });
+    });
+  });
+
   describe('multiple cursors', () => {
     describe('sibling nodes', () => {
       it('places cursors at next siblings', async () => {

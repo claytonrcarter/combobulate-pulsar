@@ -16,6 +16,9 @@
       "combobulate:move-to-next-sibling",
       "combobulate:move-to-previous-sibling",
       "combobulate:select-current-function",
+      "combobulate:select-current-node",
+      "combobulate:select-next-sibling",
+      "combobulate:select-previous-sibling",
       "combobulate:swap-with-next-sibling",
       "combobulate:swap-with-previous-sibling",
       "combobulate:transpose-nodes"
